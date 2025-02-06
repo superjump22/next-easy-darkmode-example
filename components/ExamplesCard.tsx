@@ -15,78 +15,88 @@ import {
   SelectValue,
 } from './ui/select'
 
+// Types for transition options and modes
 type TransitionTypeValue = 'none' | 'fade' | 'circular-reveal' | 'custom'
 type CircularMode = 'ref' | 'random'
 type CustomMode = 'slide' | 'diamond' | 'ellipse'
 
+// Predefined clip-path animations for custom transitions
+const customTransitions = {
+  slide: {
+    from: 'inset(0 0 100% 0)',
+    to: 'inset(0)',
+  },
+  diamond: {
+    from: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
+    to: 'polygon(-50% 50%, 50% -50%, 150% 50%, 50% 150%)',
+  },
+  ellipse: {
+    from: 'ellipse(0% 0% at 50% 50%)',
+    to: 'ellipse(150% 75% at 50% 50%)',
+  },
+} as const
+
 export function ExamplesCard() {
+  // Refs for circular reveal from button positions
   const toggleRef = React.useRef<HTMLButtonElement>(null)
   const darkRef = React.useRef<HTMLButtonElement>(null)
   const lightRef = React.useRef<HTMLButtonElement>(null)
   const systemRef = React.useRef<HTMLButtonElement>(null)
+
+  // State for transition options
   const [transitionType, setTransitionType] = React.useState<TransitionTypeValue>('fade')
   const [circularMode, setCircularMode] = React.useState<CircularMode>('ref')
   const [customMode, setCustomMode] = React.useState<CustomMode>('slide')
 
+  // Get transition configuration based on selected options
   const getTransitionConfig = (): TransitionType => {
-    if (transitionType === 'none') {
-      return { type: 'none' }
-    }
-
-    if (transitionType === 'fade') {
-      return { type: 'fade' }
-    }
-
-    if (transitionType === 'circular-reveal') {
-      return {
-        type: 'circular-reveal',
-        center: { x: (Math.random() * 0.6 + 0.2) * window.innerWidth, y: (Math.random() * 0.6 + 0.2) * window.innerHeight },
-      }
-    }
-
-    // Custom transitions from documentation
-    const customTransitions = {
-      slide: {
-        from: 'inset(0 0 100% 0)',
-        to: 'inset(0)',
-      },
-      diamond: {
-        from: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
-        to: 'polygon(-50% 50%, 50% -50%, 150% 50%, 50% 150%)',
-      },
-      ellipse: {
-        from: 'ellipse(0% 0% at 50% 50%)',
-        to: 'ellipse(150% 75% at 50% 50%)',
-      },
-    }
-
-    return {
-      type: 'custom',
-      clipPath: customTransitions[customMode],
+    switch (transitionType) {
+      case 'none':
+        return { type: 'none' }
+      case 'fade':
+        return { type: 'fade' }
+      case 'circular-reveal':
+        return {
+          type: 'circular-reveal',
+          // Random position within the middle 60% of the viewport
+          center: {
+            x: (Math.random() * 0.6 + 0.2) * window.innerWidth,
+            y: (Math.random() * 0.6 + 0.2) * window.innerHeight,
+          },
+        }
+      case 'custom':
+        return {
+          type: 'custom',
+          clipPath: customTransitions[customMode],
+        }
     }
   }
 
+  // Main theme hook with selected transition
   const { isDarkMode, toggle, enable, disable, system } = useDarkMode({
     transition: getTransitionConfig(),
     duration: 500,
     easing: 'ease-in-out',
   })
 
-  const { toggle: refToggle } = useDarkMode({
-    transition: { type: 'circular-reveal', center: { ref: toggleRef } },
-  })
+  // Separate hooks for button-specific circular reveals
+  const refActions = {
+    toggle: useDarkMode({ transition: { type: 'circular-reveal', center: { ref: toggleRef } } }).toggle,
+    enable: useDarkMode({ transition: { type: 'circular-reveal', center: { ref: darkRef } } }).enable,
+    disable: useDarkMode({ transition: { type: 'circular-reveal', center: { ref: lightRef } } }).disable,
+    system: useDarkMode({ transition: { type: 'circular-reveal', center: { ref: systemRef } } }).system,
+  }
 
-  const { enable: refEnable } = useDarkMode({
-    transition: { type: 'circular-reveal', center: { ref: darkRef } },
-  })
-
-  const { disable: refDisable } = useDarkMode({
-    transition: { type: 'circular-reveal', center: { ref: lightRef } },
-  })
-
-  const { system: refSystem } = useDarkMode({
-    transition: { type: 'circular-reveal', center: { ref: systemRef } },
-  })
+  // Handle theme actions with appropriate transition
+  const handleAction = (action: keyof typeof refActions) => {
+    if (transitionType === 'circular-reveal' && circularMode === 'ref') {
+      refActions[action]()
+    }
+    else {
+      const baseAction = { toggle, enable, disable, system }[action]
+      baseAction()
+    }
+  }
 
   return (
     <Card className="w-full max-w-2xl">
@@ -115,7 +125,10 @@ export function ExamplesCard() {
         {transitionType === 'circular-reveal' && (
           <div>
             <Label className="text-lg block mb-2">Circular Reveal Mode</Label>
-            <RadioGroup value={circularMode} onValueChange={value => setCircularMode(value as CircularMode)}>
+            <RadioGroup
+              value={circularMode}
+              onValueChange={value => setCircularMode(value as CircularMode)}
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="ref" id="ref" />
                 <Label className="text-md" htmlFor="ref">From Button</Label>
@@ -129,21 +142,23 @@ export function ExamplesCard() {
         )}
 
         {transitionType === 'custom' && (
-          <div className="space-y-6">
-            <Label className="block">Custom Animation</Label>
-            <RadioGroup className="space-y-3" value={customMode} onValueChange={value => setCustomMode(value as CustomMode)}>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="slide" id="slide" />
-                <Label htmlFor="slide">Slide from top</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="diamond" id="diamond" />
-                <Label htmlFor="diamond">Diamond expand</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="ellipse" id="ellipse" />
-                <Label htmlFor="ellipse">Ellipse expand</Label>
-              </div>
+          <div>
+            <Label className="text-lg block mb-2">Custom Animation</Label>
+            <RadioGroup
+              className="space-y-3"
+              value={customMode}
+              onValueChange={value => setCustomMode(value as CustomMode)}
+            >
+              {Object.entries(customTransitions).map(([key, _]) => (
+                <div key={key} className="flex items-center space-x-2">
+                  <RadioGroupItem value={key} id={key} />
+                  <Label htmlFor={key}>
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                    {' '}
+                    expand
+                  </Label>
+                </div>
+              ))}
             </RadioGroup>
           </div>
         )}
@@ -151,14 +166,7 @@ export function ExamplesCard() {
         <div className="flex flex-wrap gap-4">
           <Button
             ref={toggleRef}
-            onClick={() => {
-              if (transitionType === 'circular-reveal' && circularMode === 'ref') {
-                refToggle()
-              }
-              else {
-                toggle()
-              }
-            }}
+            onClick={() => handleAction('toggle')}
             variant="outline"
           >
             {isDarkMode ? '🌞' : '🌙'}
@@ -167,42 +175,21 @@ export function ExamplesCard() {
           </Button>
           <Button
             ref={darkRef}
-            onClick={() => {
-              if (transitionType === 'circular-reveal' && circularMode === 'ref') {
-                refEnable()
-              }
-              else {
-                enable()
-              }
-            }}
+            onClick={() => handleAction('enable')}
             variant="outline"
           >
             Dark
           </Button>
           <Button
             ref={lightRef}
-            onClick={() => {
-              if (transitionType === 'circular-reveal' && circularMode === 'ref') {
-                refDisable()
-              }
-              else {
-                disable()
-              }
-            }}
+            onClick={() => handleAction('disable')}
             variant="outline"
           >
             Light
           </Button>
           <Button
             ref={systemRef}
-            onClick={() => {
-              if (transitionType === 'circular-reveal' && circularMode === 'ref') {
-                refSystem()
-              }
-              else {
-                system()
-              }
-            }}
+            onClick={() => handleAction('system')}
             variant="outline"
           >
             System
