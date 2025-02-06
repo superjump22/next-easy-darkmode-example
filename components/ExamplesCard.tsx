@@ -18,7 +18,7 @@ import {
 // Types for transition options and modes
 type TransitionTypeValue = 'none' | 'fade' | 'circular-reveal' | 'custom'
 type CircularMode = 'ref' | 'random'
-type CustomMode = 'slide' | 'diamond' | 'ellipse'
+type CustomMode = 'slide' | 'diamond'
 
 // Predefined clip-path animations for custom transitions
 const customTransitions = {
@@ -29,10 +29,6 @@ const customTransitions = {
   diamond: {
     from: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
     to: 'polygon(-50% 50%, 50% -50%, 150% 50%, 50% 150%)',
-  },
-  ellipse: {
-    from: 'ellipse(0% 0% at 50% 50%)',
-    to: 'ellipse(150% 75% at 50% 50%)',
   },
 } as const
 
@@ -73,7 +69,7 @@ export function ExamplesCard() {
   }
 
   // Main theme hook with selected transition
-  const { isDarkMode, toggle, enable, disable, system } = useDarkMode({
+  const { toggle, enable, disable, system } = useDarkMode({
     transition: getTransitionConfig(),
     duration: 500,
     easing: 'ease-in-out',
@@ -169,8 +165,6 @@ export function ExamplesCard() {
             onClick={() => handleAction('toggle')}
             variant="outline"
           >
-            {isDarkMode ? '🌞' : '🌙'}
-            {' '}
             Toggle Theme
           </Button>
           <Button
