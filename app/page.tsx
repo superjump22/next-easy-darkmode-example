@@ -1,13 +1,9 @@
-import { Card, CardContent } from '@/components/ui/card'
+import { ExamplesCard } from '@/components/ExamplesCard'
 
 export default function Home() {
   return (
-    <div className="min-h-screen min-w-screen flex justify-center items-center">
-      <Card className="w-[350px]">
-        <CardContent>
-
-        </CardContent>
-      </Card>
-    </div>
+    <main className="flex min-h-screen items-center justify-center">
+      <ExamplesCard />
+    </main>
   )
 }
