@@ -18,7 +18,7 @@ import {
 // Types for transition options
 type TransitionTypeValue = 'none' | 'default' | 'circular-reveal' | 'custom'
 type CircularMode = 'ref' | 'random'
-type CustomMode = 'push' | 'zoom' | 'dissolve' | 'wipe'
+type CustomMode = 'push' | 'zoom' | 'dissolve' | 'wipe' | 'morph' | 'shutter' | 'flip' | 'glitch'
 
 // Predefined custom animations
 const customAnimations = {
@@ -29,14 +29,14 @@ const customAnimations = {
         { transform: 'translateX(0)', opacity: 1 },
         { transform: 'translateX(-100%)', opacity: 1 },
       ] as Keyframe[],
-      options: { duration: 400, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      options: { duration: 800, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
     },
     new: {
       keyframes: [
         { transform: 'translateX(100%)', opacity: 1 },
         { transform: 'translateX(0)', opacity: 1 },
       ] as Keyframe[],
-      options: { duration: 400, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      options: { duration: 800, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
     },
   },
   // Zoom effect (like Premiere's "Cross Zoom" transition)
@@ -46,14 +46,14 @@ const customAnimations = {
         { transform: 'scale(1) rotate(0deg)', opacity: 1 },
         { transform: 'scale(2) rotate(5deg)', opacity: 0 },
       ] as Keyframe[],
-      options: { duration: 600, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      options: { duration: 1000, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
     },
     new: {
       keyframes: [
         { transform: 'scale(0.5) rotate(-5deg)', opacity: 0 },
         { transform: 'scale(1) rotate(0deg)', opacity: 1 },
       ] as Keyframe[],
-      options: { duration: 600, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      options: { duration: 1000, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
     },
   },
   // Dissolve effect (like Premiere's "Film Dissolve" transition)
@@ -61,17 +61,17 @@ const customAnimations = {
     css: `
       ::view-transition-old(root),
       ::view-transition-new(root) {
-        animation-duration: 800ms;
+        animation-duration: 1200ms;
         animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         mix-blend-mode: plus-lighter;
       }
 
       ::view-transition-old(root) {
-        animation: dissolve-out 800ms forwards;
+        animation: dissolve-out 1200ms forwards;
       }
       
       ::view-transition-new(root) {
-        animation: dissolve-in 800ms forwards;
+        animation: dissolve-in 1200ms forwards;
       }
       
       @keyframes dissolve-out {
@@ -111,7 +111,7 @@ const customAnimations = {
       ::view-transition-old(root),
       ::view-transition-new(root) {
         animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        animation-duration: 500ms;
+        animation-duration: 1000ms;
       }
 
       ::view-transition-old(root) {
@@ -138,6 +138,360 @@ const customAnimations = {
         to { 
           clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         }
+      }
+    `,
+  },
+  // Morph effect (like morphing shapes)
+  morph: {
+    css: `
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: 1500ms;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      ::view-transition-old(root) {
+        animation: morph-out 1500ms forwards;
+        transform-origin: center;
+      }
+      
+      ::view-transition-new(root) {
+        animation: morph-in 1500ms forwards;
+        transform-origin: center;
+      }
+      
+      @keyframes morph-out {
+        0% { 
+          clip-path: inset(0 0 0 0);
+          transform: scale(1);
+          filter: brightness(1);
+        }
+        25% { 
+          clip-path: circle(70.7% at 50% 50%);
+          transform: scale(0.95);
+          filter: brightness(1.1);
+        }
+        50% { 
+          clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+          transform: scale(0.9) rotate(-5deg);
+          filter: brightness(1.2);
+        }
+        75% { 
+          clip-path: circle(35.4% at 50% 50%);
+          transform: scale(0.85) rotate(-10deg);
+          filter: brightness(1.3);
+        }
+        100% { 
+          clip-path: inset(50% 50% 50% 50%);
+          transform: scale(0.8) rotate(-15deg);
+          filter: brightness(1.4);
+        }
+      }
+      
+      @keyframes morph-in {
+        0% { 
+          clip-path: inset(50% 50% 50% 50%);
+          transform: scale(0.8) rotate(15deg);
+          filter: brightness(0.6);
+        }
+        25% { 
+          clip-path: circle(35.4% at 50% 50%);
+          transform: scale(0.85) rotate(10deg);
+          filter: brightness(0.7);
+        }
+        50% { 
+          clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+          transform: scale(0.9) rotate(5deg);
+          filter: brightness(0.8);
+        }
+        75% { 
+          clip-path: circle(70.7% at 50% 50%);
+          transform: scale(0.95);
+          filter: brightness(0.9);
+        }
+        100% { 
+          clip-path: inset(0 0 0 0);
+          transform: scale(1);
+          filter: brightness(1);
+        }
+      }
+    `,
+  },
+  // Shutter effect (like camera shutter)
+  shutter: {
+    css: `
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: 1200ms;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      ::view-transition-old(root) {
+        animation: shutter-out 1200ms forwards;
+      }
+      
+      ::view-transition-new(root) {
+        animation: shutter-in 1200ms forwards;
+      }
+      
+      @keyframes shutter-out {
+        0% { 
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+        25% { 
+          clip-path: polygon(0 0, 100% 0, 100% 25%, 0 25%);
+        }
+        50% { 
+          clip-path: polygon(0 25%, 100% 25%, 100% 50%, 0 50%);
+        }
+        75% { 
+          clip-path: polygon(0 50%, 100% 50%, 100% 75%, 0 75%);
+        }
+        100% { 
+          clip-path: polygon(0 75%, 100% 75%, 100% 100%, 0 100%);
+        }
+      }
+      
+      @keyframes shutter-in {
+        0% { 
+          clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+        }
+        25% { 
+          clip-path: polygon(0 0, 100% 0, 100% 25%, 0 25%);
+        }
+        50% { 
+          clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+        }
+        75% { 
+          clip-path: polygon(0 0, 100% 0, 100% 75%, 0 75%);
+        }
+        100% { 
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+      }
+    `,
+  },
+  // 3D Flip effect
+  flip: {
+    css: `
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: 600ms;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform-style: preserve-3d;
+        will-change: transform;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+
+      ::view-transition-old(root) {
+        animation: flip-out 600ms forwards;
+        z-index: 1;
+      }
+      
+      ::view-transition-new(root) {
+        animation: flip-in 600ms forwards;
+        z-index: 2;
+      }
+      
+      @keyframes flip-out {
+        0% { 
+          transform: perspective(1000px) rotateY(0deg);
+          opacity: 1;
+        }
+        100% { 
+          transform: perspective(1000px) rotateY(-90deg);
+          opacity: 0;
+        }
+      }
+      
+      @keyframes flip-in {
+        0% { 
+          transform: perspective(1000px) rotateY(90deg);
+          opacity: 0;
+        }
+        100% { 
+          transform: perspective(1000px) rotateY(0deg);
+          opacity: 1;
+        }
+      }
+
+      ::view-transition-group(root) {
+        animation: none;
+        mix-blend-mode: normal;
+      }
+    `,
+  },
+  // Glitch effect
+  glitch: {
+    css: `
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: 800ms;
+        animation-timing-function: steps(24, end);
+      }
+
+      ::view-transition-old(root) {
+        animation: glitch-out 800ms forwards;
+        mix-blend-mode: difference;
+      }
+      
+      ::view-transition-new(root) {
+        animation: glitch-in 800ms forwards;
+        mix-blend-mode: difference;
+      }
+      
+      @keyframes glitch-out {
+        0% { 
+          clip-path: inset(0 0 0 0);
+          transform: translate(0);
+          filter: none;
+        }
+        8% { 
+          clip-path: inset(8% -5px 88% 0);
+          transform: translate(-4px);
+          filter: hue-rotate(90deg);
+        }
+        16% { 
+          clip-path: inset(85% 0 12% 0);
+          transform: translate(4px);
+          filter: invert(100%);
+        }
+        24% { 
+          clip-path: inset(5% -5px 92% 0);
+          transform: translate(-3px);
+          filter: saturate(200%);
+        }
+        32% { 
+          clip-path: inset(92% 0 5% 0);
+          transform: translate(3px);
+          filter: hue-rotate(-90deg);
+        }
+        40% { 
+          clip-path: inset(15% -5px 82% 0);
+          transform: translate(-2px);
+          filter: brightness(150%);
+        }
+        48% { 
+          clip-path: inset(78% 0 19% 0);
+          transform: translate(2px);
+          filter: contrast(150%);
+        }
+        56% { 
+          clip-path: inset(25% -5px 72% 0);
+          transform: translate(-4px);
+          filter: saturate(200%);
+        }
+        64% { 
+          clip-path: inset(65% 0 32% 0);
+          transform: translate(4px);
+          filter: brightness(200%);
+        }
+        72% { 
+          clip-path: inset(35% -5px 62% 0);
+          transform: translate(-3px);
+          filter: invert(100%);
+        }
+        80% { 
+          clip-path: inset(55% 0 42% 0);
+          transform: translate(3px);
+          filter: hue-rotate(180deg);
+        }
+        88% { 
+          clip-path: inset(45% -5px 52% 0);
+          transform: translate(-2px);
+          filter: brightness(150%);
+        }
+        96% { 
+          clip-path: inset(48% 0 49% 0);
+          transform: translate(2px);
+          filter: contrast(200%);
+        }
+        100% { 
+          clip-path: inset(100% 0 0 0);
+          transform: translate(0);
+          filter: none;
+        }
+      }
+      
+      @keyframes glitch-in {
+        0% { 
+          clip-path: inset(100% 0 0 0);
+          transform: translate(0);
+          filter: none;
+        }
+        8% { 
+          clip-path: inset(82% -5px 15% 0);
+          transform: translate(4px);
+          filter: brightness(150%);
+        }
+        16% { 
+          clip-path: inset(19% 0 78% 0);
+          transform: translate(-4px);
+          filter: contrast(150%);
+        }
+        24% { 
+          clip-path: inset(72% -5px 25% 0);
+          transform: translate(3px);
+          filter: saturate(200%);
+        }
+        32% { 
+          clip-path: inset(32% 0 65% 0);
+          transform: translate(-3px);
+          filter: hue-rotate(45deg);
+        }
+        40% { 
+          clip-path: inset(62% -5px 35% 0);
+          transform: translate(2px);
+          filter: invert(80%);
+        }
+        48% { 
+          clip-path: inset(42% 0 55% 0);
+          transform: translate(-2px);
+          filter: brightness(180%);
+        }
+        56% { 
+          clip-path: inset(52% -5px 45% 0);
+          transform: translate(4px);
+          filter: contrast(180%);
+        }
+        64% { 
+          clip-path: inset(48% 0 49% 0);
+          transform: translate(-4px);
+          filter: saturate(180%);
+        }
+        72% { 
+          clip-path: inset(45% -5px 52% 0);
+          transform: translate(3px);
+          filter: hue-rotate(-45deg);
+        }
+        80% { 
+          clip-path: inset(55% 0 42% 0);
+          transform: translate(-3px);
+          filter: invert(100%);
+        }
+        88% { 
+          clip-path: inset(35% -5px 62% 0);
+          transform: translate(2px);
+          filter: brightness(150%);
+        }
+        96% { 
+          clip-path: inset(65% 0 32% 0);
+          transform: translate(-2px);
+          filter: contrast(200%);
+        }
+        100% { 
+          clip-path: inset(0 0 0 0);
+          transform: translate(0);
+          filter: none;
+        }
+      }
+
+      ::view-transition-group(root) {
+        animation: none;
       }
     `,
   },
@@ -256,6 +610,7 @@ export function ExamplesCard() {
             <RadioGroup
               value={customMode}
               onValueChange={value => setCustomMode(value as CustomMode)}
+              className="grid grid-cols-2 gap-4"
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="push" id="push" />
@@ -272,6 +627,22 @@ export function ExamplesCard() {
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="wipe" id="wipe" />
                 <Label className="text-md" htmlFor="wipe">Linear Wipe</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="morph" id="morph" />
+                <Label className="text-md" htmlFor="morph">Morph</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="shutter" id="shutter" />
+                <Label className="text-md" htmlFor="shutter">Shutter</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="flip" id="flip" />
+                <Label className="text-md" htmlFor="flip">3D Flip</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="glitch" id="glitch" />
+                <Label className="text-md" htmlFor="glitch">Glitch</Label>
               </div>
             </RadioGroup>
           </div>
